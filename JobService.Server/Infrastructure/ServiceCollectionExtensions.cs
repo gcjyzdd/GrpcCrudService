@@ -1,4 +1,5 @@
 using JobService.Data;
+using JobService.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace JobService.Infrastructure;
@@ -19,6 +20,9 @@ public static class ServiceCollectionExtensions
         // Add Entity Framework
         services.AddDbContext<JobContext>(options =>
             options.UseSqlite(configuration.GetConnectionString("DefaultConnection")));
+
+        // Add repositories
+        services.AddScoped<IJobRepository, JobRepository>();
 
         // Add infrastructure services
         services.AddSingleton<CancellationTokenSource>();

@@ -1,19 +1,18 @@
 using Grpc.Core;
-using Microsoft.EntityFrameworkCore;
-using JobService.Data;
 using JobService.Models;
+using JobService.Repositories;
 using Google.Protobuf.WellKnownTypes;
 
 namespace JobService.Services
 {
     public class JobGrpcService : JobService.JobServiceBase
     {
-        private readonly JobContext _context;
+        private readonly IJobRepository _jobRepository;
         private readonly ILogger<JobGrpcService> _logger;
 
-        public JobGrpcService(JobContext context, ILogger<JobGrpcService> logger)
+        public JobGrpcService(IJobRepository jobRepository, ILogger<JobGrpcService> logger)
         {
-            _context = context;
+            _jobRepository = jobRepository;
             _logger = logger;
         }
 
@@ -29,12 +28,11 @@ namespace JobService.Services
                     CreatedAt = DateTime.UtcNow
                 };
 
-                _context.Jobs.Add(job);
-                await _context.SaveChangesAsync();
+                var createdJob = await _jobRepository.CreateAsync(job);
 
                 return new JobResponse
                 {
-                    Job = MapToProtoJob(job),
+                    Job = MapToProtoJob(createdJob),
                     Success = true,
                     Message = "Job created successfully"
                 };
@@ -54,7 +52,7 @@ namespace JobService.Services
         {
             try
             {
-                var job = await _context.Jobs.FindAsync(request.Id);
+                var job = await _jobRepository.GetByIdAsync(request.Id);
                 if (job == null)
                 {
                     return new JobResponse
@@ -86,7 +84,7 @@ namespace JobService.Services
         {
             try
             {
-                var jobs = await _context.Jobs.ToListAsync();
+                var jobs = await _jobRepository.GetAllAsync();
                 var response = new GetAllJobsResponse
                 {
                     Success = true,
@@ -115,8 +113,16 @@ namespace JobService.Services
         {
             try
             {
-                var job = await _context.Jobs.FindAsync(request.Id);
-                if (job == null)
+                var job = new Models.Job
+                {
+                    Id = request.Id,
+                    Name = request.Name,
+                    WorkDir = request.WorkDir,
+                    ClusterName = request.ClusterName
+                };
+
+                var updatedJob = await _jobRepository.UpdateAsync(job);
+                if (updatedJob == null)
                 {
                     return new JobResponse
                     {
@@ -125,15 +131,9 @@ namespace JobService.Services
                     };
                 }
 
-                job.Name = request.Name;
-                job.WorkDir = request.WorkDir;
-                job.ClusterName = request.ClusterName;
-
-                await _context.SaveChangesAsync();
-
                 return new JobResponse
                 {
-                    Job = MapToProtoJob(job),
+                    Job = MapToProtoJob(updatedJob),
                     Success = true,
                     Message = "Job updated successfully"
                 };
@@ -153,8 +153,8 @@ namespace JobService.Services
         {
             try
             {
-                var job = await _context.Jobs.FindAsync(request.Id);
-                if (job == null)
+                var deleted = await _jobRepository.DeleteAsync(request.Id);
+                if (!deleted)
                 {
                     return new DeleteJobResponse
                     {
@@ -162,9 +162,6 @@ namespace JobService.Services
                         Message = "Job not found"
                     };
                 }
-
-                _context.Jobs.Remove(job);
-                await _context.SaveChangesAsync();
 
                 return new DeleteJobResponse
                 {
