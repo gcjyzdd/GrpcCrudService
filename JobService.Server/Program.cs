@@ -1,8 +1,28 @@
 using JobService.Services;
 using JobService.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Kestrel to use named pipes
+builder.WebHost.ConfigureKestrel(options =>
+{
+    if (OperatingSystem.IsWindows())
+    {
+        options.ListenNamedPipe("JobServicePipe");
+    }
+    else
+    {
+        // For Unix-like systems, use Unix domain sockets
+        var socketPath = Path.Combine(Path.GetTempPath(), "jobservice.sock");
+        if (File.Exists(socketPath))
+        {
+            File.Delete(socketPath);
+        }
+        options.ListenUnixSocket(socketPath);
+    }
+});
 
 // Add services to the container.
 builder.Services.AddGrpc();
@@ -28,8 +48,18 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configure the HTTP request pipeline.
+// Configure the gRPC pipeline.
 app.MapGrpcService<JobService.Services.JobGrpcService>();
-app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+
+// Log connection information
+if (OperatingSystem.IsWindows())
+{
+    app.Logger.LogInformation("gRPC Server listening on named pipe: JobServicePipe");
+}
+else
+{
+    var socketPath = Path.Combine(Path.GetTempPath(), "jobservice.sock");
+    app.Logger.LogInformation("gRPC Server listening on Unix socket: {SocketPath}", socketPath);
+}
 
 app.Run();

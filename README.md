@@ -91,13 +91,13 @@ dotnet ef database update
 ### Step 9: Test the Service ✅
 ```bash
 dotnet run
-# Service runs on http://localhost:5104
+# Service runs on named pipes for local communication
 ```
 
 ## Technologies Used
 
 - .NET 8
-- gRPC
+- gRPC over Named Pipes/Unix Domain Sockets
 - Entity Framework Core
 - SQLite
 - Protocol Buffers
@@ -113,7 +113,11 @@ dotnet run
 The server will automatically:
 - Create the SQLite database if it doesn't exist
 - Apply any pending migrations
-- Start listening on `http://localhost:5104`
+- Start listening on named pipes for local communication
+
+**Connection Details:**
+- **Windows**: Named pipe `JobServicePipe`
+- **Unix/Linux**: Unix domain socket at `/tmp/jobservice.sock`
 
 Note: The database is automatically created on startup, so no manual migration commands are needed.
 
@@ -123,7 +127,7 @@ Note: The database is automatically created on startup, so no manual migration c
 3. Build the client: `dotnet build`
 4. Run the client: `dotnet run`
 
-The client will automatically connect to the server and demonstrate all CRUD operations.
+The client will automatically connect to the server via named pipes and demonstrate all CRUD operations.
 
 ## Testing
 
@@ -218,7 +222,9 @@ The solution consists of two projects:
 Both projects share the same proto file (`JobService.Server/Protos/job.proto`) to ensure consistency between server and client.
 
 ### Key Features:
+- **Named Pipe Communication**: Uses named pipes (Windows) or Unix domain sockets (Linux/Mac) for fast local communication
 - **Automatic Database Creation**: The server automatically creates the SQLite database on startup
 - **Shared Proto Files**: Both client and server use the same service definition
 - **Comprehensive Testing**: The client tests all CRUD operations with detailed output
+- **Cross-Platform Support**: Works on Windows (named pipes) and Unix-like systems (domain sockets)
 - **Error Handling**: Proper error handling and logging throughout the application

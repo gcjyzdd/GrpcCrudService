@@ -4,8 +4,47 @@ using JobService;
 Console.WriteLine("JobService gRPC Client - Testing CRUD Operations");
 Console.WriteLine("================================================");
 
-// Create gRPC channel
-using var channel = GrpcChannel.ForAddress("http://localhost:5104");
+// Create gRPC channel for named pipes
+GrpcChannel channel;
+if (OperatingSystem.IsWindows())
+{
+    // Windows Named Pipe
+    var connectionString = "http://localhost";
+    channel = GrpcChannel.ForAddress(connectionString, new GrpcChannelOptions
+    {
+        HttpHandler = new SocketsHttpHandler()
+        {
+            ConnectCallback = async (context, cancellationToken) =>
+            {
+                var pipeClient = new System.IO.Pipes.NamedPipeClientStream(".", "JobServicePipe", System.IO.Pipes.PipeDirection.InOut);
+                await pipeClient.ConnectAsync(cancellationToken);
+                return pipeClient;
+            }
+        }
+    });
+    Console.WriteLine("Connecting to server via named pipe: JobServicePipe");
+}
+else
+{
+    // Unix Domain Socket
+    var socketPath = Path.Combine(Path.GetTempPath(), "jobservice.sock");
+    var connectionString = "http://localhost";
+    channel = GrpcChannel.ForAddress(connectionString, new GrpcChannelOptions
+    {
+        HttpHandler = new SocketsHttpHandler()
+        {
+            ConnectCallback = async (context, cancellationToken) =>
+            {
+                var socket = new System.Net.Sockets.Socket(System.Net.Sockets.AddressFamily.Unix, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Unspecified);
+                var endpoint = new System.Net.Sockets.UnixDomainSocketEndPoint(socketPath);
+                await socket.ConnectAsync(endpoint, cancellationToken);
+                return new System.Net.Sockets.NetworkStream(socket, true);
+            }
+        }
+    });
+    Console.WriteLine($"Connecting to server via Unix socket: {socketPath}");
+}
+
 var client = new JobService.JobService.JobServiceClient(channel);
 
 try
@@ -127,7 +166,15 @@ try
 catch (Exception ex)
 {
     Console.WriteLine($"\n❌ Error: {ex.Message}");
-    Console.WriteLine("Make sure the JobService is running on http://localhost:5104");
+    if (OperatingSystem.IsWindows())
+    {
+        Console.WriteLine("Make sure the JobService server is running with named pipe: JobServicePipe");
+    }
+    else
+    {
+        var socketPath = Path.Combine(Path.GetTempPath(), "jobservice.sock");
+        Console.WriteLine($"Make sure the JobService server is running with Unix socket: {socketPath}");
+    }
     Console.WriteLine("\nPress any key to exit...");
     Console.ReadKey();
 }
