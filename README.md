@@ -104,19 +104,30 @@ dotnet run
 
 ## Getting Started
 
-1. Clone the repository
+### Running the Server
+1. Navigate to the JobService directory
 2. Restore packages: `dotnet restore`
 3. Build the project: `dotnet build`
 4. Run database migrations: `dotnet ef database update`
 5. Start the service: `dotnet run`
 
+The server will start on `http://localhost:5104`
+
+### Running the Client
+1. Open a new terminal
+2. Navigate to the JobService.Client directory
+3. Build the client: `dotnet build`
+4. Run the client: `dotnet run`
+
+The client will automatically connect to the server and demonstrate all CRUD operations.
+
 ## Testing
 
-A test client is provided (`TestClient.cs`) to demonstrate all CRUD operations:
+The `JobService.Client` project provides a comprehensive test of all CRUD operations:
 
 ```csharp
-// Example usage
-var client = new JobService.JobServiceClient(channel);
+// Example usage from JobService.Client
+var client = new JobService.JobService.JobServiceClient(channel);
 
 // Create job
 var createResponse = await client.CreateJobAsync(new CreateJobRequest
@@ -145,6 +156,22 @@ var updateResponse = await client.UpdateJobAsync(new UpdateJobRequest
 var deleteResponse = await client.DeleteJobAsync(new DeleteJobRequest { Id = 1 });
 ```
 
+### Building and Running Solution
+
+To build the entire solution:
+```bash
+dotnet build
+```
+
+To run both server and client:
+```bash
+# Terminal 1 - Start server
+dotnet run --project JobService.csproj
+
+# Terminal 2 - Run client
+dotnet run --project JobService.Client/JobService.Client.csproj
+```
+
 ## API Operations
 
 The service provides the following gRPC operations:
@@ -158,14 +185,28 @@ The service provides the following gRPC operations:
 
 ```
 JobService/
+├── JobService.sln                    # Solution file
+├── JobService.csproj                 # Server project
 ├── Models/
-│   └── Job.cs
+│   └── Job.cs                        # Job entity model
 ├── Data/
-│   └── JobContext.cs
+│   └── JobContext.cs                 # EF Core DbContext
 ├── Services/
-│   └── JobService.cs
+│   └── JobService.cs                 # gRPC service implementation
 ├── Protos/
-│   └── job.proto
-├── Program.cs
-└── appsettings.json
+│   └── job.proto                     # Shared gRPC service definition
+├── Program.cs                        # Server configuration
+├── appsettings.json                  # Server configuration
+└── JobService.Client/                # Client console application
+    ├── JobService.Client.csproj      # Client project
+    └── Program.cs                    # Client test application
 ```
+
+## Solution Structure
+
+The solution consists of two projects:
+
+1. **JobService** - The gRPC server project that provides the job management API
+2. **JobService.Client** - A console application that demonstrates all CRUD operations
+
+Both projects share the same proto file (`Protos/job.proto`) to ensure consistency between server and client.
