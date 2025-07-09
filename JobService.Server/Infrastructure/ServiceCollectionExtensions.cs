@@ -22,7 +22,6 @@ public static class ServiceCollectionExtensions
 
         // Add infrastructure services
         services.AddSingleton<CancellationTokenSource>();
-        services.AddSingleton<GracefulShutdownService>();
         services.AddSingleton<DatabaseInitializer>();
 
         return services;

@@ -7,6 +7,7 @@ public class GracefulShutdownService
     private readonly ILogger<GracefulShutdownService> _logger;
     private readonly CancellationTokenSource _shutdownTokenSource;
     private readonly string _socketPath;
+    private volatile bool _shutdownInitiated = false;
 
     public GracefulShutdownService(ILogger<GracefulShutdownService> logger, CancellationTokenSource shutdownTokenSource, string socketPath)
     {
@@ -29,8 +30,7 @@ public class GracefulShutdownService
         Console.CancelKeyPress += (sender, e) =>
         {
             e.Cancel = true;
-            _logger.LogInformation("Ctrl+C received, initiating graceful shutdown...");
-            _shutdownTokenSource.Cancel();
+            InitiateShutdown("Ctrl+C received");
         };
     }
 
@@ -38,8 +38,7 @@ public class GracefulShutdownService
     {
         AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
         {
-            _logger.LogInformation("Process exit event received, initiating graceful shutdown...");
-            _shutdownTokenSource.Cancel();
+            InitiateShutdown("Process exit event received");
         };
     }
 
@@ -51,8 +50,7 @@ public class GracefulShutdownService
         {
             if (IsShutdownEvent(eventType))
             {
-                _logger.LogInformation("Windows console event received ({EventType}), initiating graceful shutdown...", eventType);
-                _shutdownTokenSource.Cancel();
+                InitiateShutdown($"Windows console event received ({eventType})");
                 
                 // Give the application time to shut down gracefully
                 Thread.Sleep(5000);
@@ -69,6 +67,32 @@ public class GracefulShutdownService
                eventType == CtrlType.CTRL_CLOSE_EVENT ||
                eventType == CtrlType.CTRL_LOGOFF_EVENT ||
                eventType == CtrlType.CTRL_SHUTDOWN_EVENT;
+    }
+
+    private void InitiateShutdown(string reason)
+    {
+        if (_shutdownInitiated) return;
+        
+        lock (this)
+        {
+            if (_shutdownInitiated) return;
+            _shutdownInitiated = true;
+        }
+
+        _logger.LogInformation("{Reason}, initiating graceful shutdown...", reason);
+        
+        try
+        {
+            if (!_shutdownTokenSource.IsCancellationRequested)
+            {
+                _shutdownTokenSource.Cancel();
+            }
+        }
+        catch (ObjectDisposedException)
+        {
+            // Token source already disposed, shutdown already in progress
+            _logger.LogDebug("CancellationTokenSource already disposed during shutdown.");
+        }
     }
 
     public void CleanupResources()
