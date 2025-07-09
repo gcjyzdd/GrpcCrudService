@@ -224,9 +224,14 @@ JobService/
 │   │   └── JobContext.cs               # EF Core DbContext
 │   ├── Services/
 │   │   └── JobService.cs               # gRPC service implementation
+│   ├── Infrastructure/                 # Infrastructure services
+│   │   ├── GracefulShutdownService.cs  # Graceful shutdown handling
+│   │   ├── ServerConfiguration.cs      # Server configuration
+│   │   ├── DatabaseInitializer.cs      # Database initialization
+│   │   └── ServiceCollectionExtensions.cs # Service registration
 │   ├── Protos/
 │   │   └── job.proto                   # Shared gRPC service definition
-│   ├── Program.cs                      # Server configuration
+│   ├── Program.cs                      # Clean server startup
 │   ├── appsettings.json                # Server configuration
 │   └── Migrations/                     # EF Core migrations
 └── JobService.Client/                  # Client console application
@@ -245,6 +250,7 @@ Both projects share the same proto file (`JobService.Server/Protos/job.proto`) t
 
 ### Key Features:
 - **Named Pipe Communication**: Uses named pipes (Windows) or Unix domain sockets (Linux/Mac) for fast local communication
+- **Clean Architecture**: Well-organized code with separation of concerns and single responsibility principle
 - **Graceful Shutdown**: Handles Ctrl+C, SIGTERM, and Windows Task Manager termination gracefully
 - **Automatic Database Creation**: The server automatically creates the SQLite database on startup
 - **Resource Cleanup**: Automatically cleans up socket files and database connections on shutdown
@@ -252,3 +258,11 @@ Both projects share the same proto file (`JobService.Server/Protos/job.proto`) t
 - **Comprehensive Testing**: The client tests all CRUD operations with detailed output
 - **Cross-Platform Support**: Works on Windows (named pipes) and Unix-like systems (domain sockets)
 - **Error Handling**: Proper error handling and logging throughout the application
+
+### Architecture:
+The server follows clean architecture principles:
+- **Program.cs**: Minimal startup configuration
+- **Infrastructure Layer**: Contains cross-cutting concerns (shutdown, configuration, database initialization)
+- **Services Layer**: Contains business logic and gRPC service implementations
+- **Data Layer**: Contains Entity Framework DbContext and models
+- **Dependency Injection**: Proper service registration and lifetime management
