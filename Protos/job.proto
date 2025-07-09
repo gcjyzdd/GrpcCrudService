@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+option csharp_namespace = "JobService";
+
+package job;
+
+import "google/protobuf/timestamp.proto";
+
+// The job service definition
+service JobService {
+  rpc CreateJob (CreateJobRequest) returns (JobResponse);
+  rpc GetJob (GetJobRequest) returns (JobResponse);
+  rpc GetAllJobs (GetAllJobsRequest) returns (GetAllJobsResponse);
+  rpc UpdateJob (UpdateJobRequest) returns (JobResponse);
+  rpc DeleteJob (DeleteJobRequest) returns (DeleteJobResponse);
+}
+
+// Job message
+message Job {
+  int32 id = 1;
+  string name = 2;
+  string work_dir = 3;
+  string cluster_name = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+// Create job request
+message CreateJobRequest {
+  string name = 1;
+  string work_dir = 2;
+  string cluster_name = 3;
+}
+
+// Get job request
+message GetJobRequest {
+  int32 id = 1;
+}
+
+// Get all jobs request
+message GetAllJobsRequest {
+  // Empty for now, can add pagination later
+}
+
+// Update job request
+message UpdateJobRequest {
+  int32 id = 1;
+  string name = 2;
+  string work_dir = 3;
+  string cluster_name = 4;
+}
+
+// Delete job request
+message DeleteJobRequest {
+  int32 id = 1;
+}
+
+// Job response
+message JobResponse {
+  Job job = 1;
+  bool success = 2;
+  string message = 3;
+}
+
+// Get all jobs response
+message GetAllJobsResponse {
+  repeated Job jobs = 1;
+  bool success = 2;
+  string message = 3;
+}
+
+// Delete job response
+message DeleteJobResponse {
+  bool success = 1;
+  string message = 2;
+}
