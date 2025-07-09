@@ -105,13 +105,17 @@ dotnet run
 ## Getting Started
 
 ### Running the Server
-1. Navigate to the JobService directory
+1. Navigate to the JobService.Server directory
 2. Restore packages: `dotnet restore`
 3. Build the project: `dotnet build`
-4. Run database migrations: `dotnet ef database update`
-5. Start the service: `dotnet run`
+4. Start the service: `dotnet run`
 
-The server will start on `http://localhost:5104`
+The server will automatically:
+- Create the SQLite database if it doesn't exist
+- Apply any pending migrations
+- Start listening on `http://localhost:5104`
+
+Note: The database is automatically created on startup, so no manual migration commands are needed.
 
 ### Running the Client
 1. Open a new terminal
@@ -166,7 +170,7 @@ dotnet build
 To run both server and client:
 ```bash
 # Terminal 1 - Start server
-dotnet run --project JobService.csproj
+dotnet run --project JobService.Server/JobService.csproj
 
 # Terminal 2 - Run client
 dotnet run --project JobService.Client/JobService.Client.csproj
@@ -185,28 +189,36 @@ The service provides the following gRPC operations:
 
 ```
 JobService/
-├── JobService.sln                    # Solution file
-├── JobService.csproj                 # Server project
-├── Models/
-│   └── Job.cs                        # Job entity model
-├── Data/
-│   └── JobContext.cs                 # EF Core DbContext
-├── Services/
-│   └── JobService.cs                 # gRPC service implementation
-├── Protos/
-│   └── job.proto                     # Shared gRPC service definition
-├── Program.cs                        # Server configuration
-├── appsettings.json                  # Server configuration
-└── JobService.Client/                # Client console application
-    ├── JobService.Client.csproj      # Client project
-    └── Program.cs                    # Client test application
+├── JobService.sln                      # Solution file
+├── JobService.Server/                  # Server project
+│   ├── JobService.csproj               # Server project file
+│   ├── Models/
+│   │   └── Job.cs                      # Job entity model
+│   ├── Data/
+│   │   └── JobContext.cs               # EF Core DbContext
+│   ├── Services/
+│   │   └── JobService.cs               # gRPC service implementation
+│   ├── Protos/
+│   │   └── job.proto                   # Shared gRPC service definition
+│   ├── Program.cs                      # Server configuration
+│   ├── appsettings.json                # Server configuration
+│   └── Migrations/                     # EF Core migrations
+└── JobService.Client/                  # Client console application
+    ├── JobService.Client.csproj        # Client project
+    └── Program.cs                      # Client test application
 ```
 
 ## Solution Structure
 
 The solution consists of two projects:
 
-1. **JobService** - The gRPC server project that provides the job management API
+1. **JobService.Server** - The gRPC server project that provides the job management API
 2. **JobService.Client** - A console application that demonstrates all CRUD operations
 
-Both projects share the same proto file (`Protos/job.proto`) to ensure consistency between server and client.
+Both projects share the same proto file (`JobService.Server/Protos/job.proto`) to ensure consistency between server and client.
+
+### Key Features:
+- **Automatic Database Creation**: The server automatically creates the SQLite database on startup
+- **Shared Proto Files**: Both client and server use the same service definition
+- **Comprehensive Testing**: The client tests all CRUD operations with detailed output
+- **Error Handling**: Proper error handling and logging throughout the application
