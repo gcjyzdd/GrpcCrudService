@@ -129,6 +129,28 @@ Note: The database is automatically created on startup, so no manual migration c
 
 The client will automatically connect to the server via named pipes and demonstrate all CRUD operations.
 
+## Graceful Shutdown
+
+The server supports graceful shutdown through multiple mechanisms:
+
+### Windows:
+- **Ctrl+C**: Press Ctrl+C in the console window
+- **Task Manager**: Terminate the process from Task Manager
+- **Console Close**: Close the console window
+- **System Shutdown**: Handles system shutdown/logoff events
+
+### Linux/Unix:
+- **Ctrl+C**: Press Ctrl+C in the terminal
+- **SIGTERM**: Send SIGTERM signal to the process
+- **Process Exit**: Handles process exit events
+
+### Cleanup Actions:
+- Logs shutdown initiation
+- Cancels ongoing operations gracefully
+- Cleans up Unix socket files (on Linux/Mac)
+- Closes database connections
+- Provides up to 30 seconds for graceful shutdown
+
 ## Testing
 
 The `JobService.Client` project provides a comprehensive test of all CRUD operations:
@@ -223,7 +245,9 @@ Both projects share the same proto file (`JobService.Server/Protos/job.proto`) t
 
 ### Key Features:
 - **Named Pipe Communication**: Uses named pipes (Windows) or Unix domain sockets (Linux/Mac) for fast local communication
+- **Graceful Shutdown**: Handles Ctrl+C, SIGTERM, and Windows Task Manager termination gracefully
 - **Automatic Database Creation**: The server automatically creates the SQLite database on startup
+- **Resource Cleanup**: Automatically cleans up socket files and database connections on shutdown
 - **Shared Proto Files**: Both client and server use the same service definition
 - **Comprehensive Testing**: The client tests all CRUD operations with detailed output
 - **Cross-Platform Support**: Works on Windows (named pipes) and Unix-like systems (domain sockets)
