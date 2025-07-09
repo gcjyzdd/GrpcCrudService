@@ -29,42 +29,121 @@ dotnet add package Microsoft.EntityFrameworkCore.Tools
 dotnet add package Microsoft.EntityFrameworkCore.Design
 ```
 
-### Step 3: Create Job Entity Model
-Create the Job entity class with required properties.
+### Step 3: Create Job Entity Model ✅
+```csharp
+// Models/Job.cs
+public class Job
+{
+    public int Id { get; set; }
+    [Required] public string Name { get; set; } = string.Empty;
+    [Required] public string WorkDir { get; set; } = string.Empty;
+    [Required] public string ClusterName { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+```
 
-### Step 4: Create DbContext
-Set up Entity Framework DbContext for database operations.
+### Step 4: Create DbContext ✅
+```csharp
+// Data/JobContext.cs
+public class JobContext : DbContext
+{
+    public JobContext(DbContextOptions<JobContext> options) : base(options) { }
+    public DbSet<Models.Job> Jobs { get; set; }
+}
+```
 
-### Step 5: Define gRPC Service Proto File
-Create .proto file with service definitions for CRUD operations.
+### Step 5: Define gRPC Service Proto File ✅
+```proto
+// Protos/job.proto
+service JobService {
+  rpc CreateJob (CreateJobRequest) returns (JobResponse);
+  rpc GetJob (GetJobRequest) returns (JobResponse);
+  rpc GetAllJobs (GetAllJobsRequest) returns (GetAllJobsResponse);
+  rpc UpdateJob (UpdateJobRequest) returns (JobResponse);
+  rpc DeleteJob (DeleteJobRequest) returns (DeleteJobResponse);
+}
+```
 
-### Step 6: Implement gRPC Service
-Implement the gRPC service with Create, Read, Update, Delete operations.
+### Step 6: Implement gRPC Service ✅
+```csharp
+// Services/JobService.cs
+public class JobGrpcService : JobService.JobServiceBase
+{
+    // Full CRUD implementation with error handling
+}
+```
 
-### Step 7: Configure Services
-Configure Entity Framework and gRPC services in Program.cs.
+### Step 7: Configure Services ✅
+```csharp
+// Program.cs
+builder.Services.AddGrpc();
+builder.Services.AddDbContext<JobContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+app.MapGrpcService<JobGrpcService>();
+```
 
-### Step 8: Database Migration
-Create and apply database migrations.
+### Step 8: Database Migration ✅
+```bash
+dotnet ef migrations add InitialCreate
+dotnet ef database update
+```
 
-### Step 9: Test the Service
-Test all CRUD operations using gRPC client.
+### Step 9: Test the Service ✅
+```bash
+dotnet run
+# Service runs on http://localhost:5104
+```
 
 ## Technologies Used
 
 - .NET 8
 - gRPC
 - Entity Framework Core
-- SQL Server
+- SQLite
 - Protocol Buffers
 
 ## Getting Started
 
 1. Clone the repository
-2. Ensure SQL Server is running
-3. Update connection string in appsettings.json
-4. Run database migrations
-5. Start the service
+2. Restore packages: `dotnet restore`
+3. Build the project: `dotnet build`
+4. Run database migrations: `dotnet ef database update`
+5. Start the service: `dotnet run`
+
+## Testing
+
+A test client is provided (`TestClient.cs`) to demonstrate all CRUD operations:
+
+```csharp
+// Example usage
+var client = new JobService.JobServiceClient(channel);
+
+// Create job
+var createResponse = await client.CreateJobAsync(new CreateJobRequest
+{
+    Name = "Test Job",
+    WorkDir = "/tmp/test",
+    ClusterName = "test-cluster"
+});
+
+// Get all jobs
+var getAllResponse = await client.GetAllJobsAsync(new GetAllJobsRequest());
+
+// Get specific job
+var getResponse = await client.GetJobAsync(new GetJobRequest { Id = 1 });
+
+// Update job
+var updateResponse = await client.UpdateJobAsync(new UpdateJobRequest
+{
+    Id = 1,
+    Name = "Updated Job",
+    WorkDir = "/tmp/updated",
+    ClusterName = "updated-cluster"
+});
+
+// Delete job
+var deleteResponse = await client.DeleteJobAsync(new DeleteJobRequest { Id = 1 });
+```
 
 ## API Operations
 
