@@ -9,13 +9,13 @@ namespace JobService.Data
         {
         }
 
-        public DbSet<Job> Jobs { get; set; }
+        public DbSet<Models.Job> Jobs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Job>(entity =>
+            modelBuilder.Entity<Models.Job>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();

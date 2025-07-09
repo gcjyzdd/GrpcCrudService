@@ -6,12 +6,12 @@ using Google.Protobuf.WellKnownTypes;
 
 namespace JobService.Services
 {
-    public class JobService : JobService.JobServiceBase
+    public class JobGrpcService : JobService.JobServiceBase
     {
         private readonly JobContext _context;
-        private readonly ILogger<JobService> _logger;
+        private readonly ILogger<JobGrpcService> _logger;
 
-        public JobService(JobContext context, ILogger<JobService> logger)
+        public JobGrpcService(JobContext context, ILogger<JobGrpcService> logger)
         {
             _context = context;
             _logger = logger;
@@ -21,7 +21,7 @@ namespace JobService.Services
         {
             try
             {
-                var job = new Job
+                var job = new Models.Job
                 {
                     Name = request.Name,
                     WorkDir = request.WorkDir,
@@ -191,7 +191,7 @@ namespace JobService.Services
                 Name = job.Name,
                 WorkDir = job.WorkDir,
                 ClusterName = job.ClusterName,
-                CreatedAt = Timestamp.FromDateTime(job.CreatedAt)
+                CreatedAt = Timestamp.FromDateTime(job.CreatedAt.ToUniversalTime())
             };
         }
     }
