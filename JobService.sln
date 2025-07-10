@@ -7,6 +7,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobService", "JobService.Se
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobService.Client", "JobService.Client\JobService.Client.csproj", "{14CDBA47-0027-4216-AD80-662C1223265C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobService.Common", "JobService.Common\JobService.Common.csproj", "{AD99186C-5984-4BC8-A6D7-3DDFCFC9128E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobService.Client.Tests", "JobService.Client.Tests\JobService.Client.Tests.csproj", "{B42F40F5-D897-40AD-ACAA-F5FDBF5F1654}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobService.IntegrationTests", "JobService.IntegrationTests\JobService.IntegrationTests.csproj", "{BF62DF62-361D-4790-A57C-A5F42B488C6F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +30,17 @@ Global
 		{14CDBA47-0027-4216-AD80-662C1223265C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14CDBA47-0027-4216-AD80-662C1223265C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14CDBA47-0027-4216-AD80-662C1223265C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD99186C-5984-4BC8-A6D7-3DDFCFC9128E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD99186C-5984-4BC8-A6D7-3DDFCFC9128E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD99186C-5984-4BC8-A6D7-3DDFCFC9128E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD99186C-5984-4BC8-A6D7-3DDFCFC9128E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B42F40F5-D897-40AD-ACAA-F5FDBF5F1654}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B42F40F5-D897-40AD-ACAA-F5FDBF5F1654}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B42F40F5-D897-40AD-ACAA-F5FDBF5F1654}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B42F40F5-D897-40AD-ACAA-F5FDBF5F1654}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF62DF62-361D-4790-A57C-A5F42B488C6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF62DF62-361D-4790-A57C-A5F42B488C6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF62DF62-361D-4790-A57C-A5F42B488C6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF62DF62-361D-4790-A57C-A5F42B488C6F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
