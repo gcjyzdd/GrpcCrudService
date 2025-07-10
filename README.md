@@ -266,3 +266,116 @@ The server follows clean architecture principles:
 - **Services Layer**: Contains business logic and gRPC service implementations
 - **Data Layer**: Contains Entity Framework DbContext and models
 - **Dependency Injection**: Proper service registration and lifetime management
+
+## Build Script
+
+### Overview
+
+The `build.sh` script provides automated building, testing, and reporting for the JobService solution.
+
+### Usage
+
+#### Full Build (Recommended)
+```bash
+./build.sh
+```
+Performs complete build, test, and report generation.
+
+#### Individual Commands
+```bash
+./build.sh --help     # Show usage information
+./build.sh --clean    # Clean solution only
+./build.sh --build    # Build solution only
+./build.sh --test     # Run tests only
+```
+
+### Features
+
+#### ✅ **Automated Build Process**
+- Prerequisites checking
+- NuGet package restoration
+- Solution compilation in Release mode
+- Cross-platform support (Linux/Windows)
+
+#### 🧪 **Unit Testing**
+- Runs all NUnit tests
+- Generates detailed test reports (TRX format)
+- Collects code coverage data
+- Reports test results summary
+
+#### 📊 **Test Reporting**
+- **Test Results**: `TestReports/test-results.trx`
+- **Coverage XML**: `CoverageReports/coverage.cobertura.xml`
+- **Coverage HTML**: `CoverageReports/html/index.html`
+
+#### 🎨 **Colored Output**
+- ✅ Green for success messages
+- ❌ Red for errors
+- ⚠️ Yellow for warnings
+- ℹ️ Blue for information
+
+### Prerequisites
+
+- .NET 8.0 SDK
+- ReportGenerator tool (auto-installed)
+
+### Project Structure
+
+```
+JobService/
+├── build.sh                    # Main build script
+├── JobService.sln              # Solution file
+├── JobService.Server/          # gRPC Server
+├── JobService.Client/          # gRPC Client
+├── JobService.Client.Tests/    # Unit Tests
+├── TestReports/               # Generated test results
+└── CoverageReports/           # Generated coverage reports
+```
+
+### Test Results
+
+The build script automatically generates comprehensive reports:
+
+#### Test Summary Example
+```
+📊 Test Results:
+   Total Tests: 7
+   Passed: 7
+   Failed: 0
+📈 Code Coverage: 18.2%
+
+📁 Generated Reports:
+   Test Results: TestReports/test-results.trx
+   Coverage XML: CoverageReports/coverage.cobertura.xml
+   Coverage HTML: CoverageReports/html/index.html
+```
+
+### CI/CD Integration
+
+The script returns appropriate exit codes:
+- `0`: Success (all tests passed)
+- `1`: Failure (tests failed or build error)
+
+Perfect for integration with CI/CD pipelines.
+
+### Troubleshooting
+
+#### Common Issues
+
+1. **Permission Denied**
+   ```bash
+   chmod +x build.sh
+   ```
+
+2. **Missing .NET SDK**
+   - Install .NET 8.0 SDK from Microsoft
+
+3. **Build Failures**
+   - Run `./build.sh --clean` first
+   - Check error messages in colored output
+
+#### Support
+
+For issues or questions, check the generated reports in:
+- `TestReports/` for test failures
+- `CoverageReports/html/` for coverage details
