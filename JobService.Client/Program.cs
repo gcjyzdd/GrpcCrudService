@@ -9,19 +9,21 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Extensions.Logging;
 
-class Program
+namespace JobService.Client;
+
+static class Program
 {
     public static async Task Main(string[] args)
     {
         var container = ConfigureServices();
-        
+
         try
         {
             using var scope = container.BeginLifetimeScope();
             var app = scope.Resolve<Application>();
-            
+
             await app.RunAsync();
-            
+
             Console.WriteLine("\nPress any key to exit...");
             Console.ReadKey();
         }
@@ -33,19 +35,19 @@ class Program
         }
         finally
         {
-            Log.CloseAndFlush();
+            await Log.CloseAndFlushAsync();
         }
     }
 
     private static IContainer ConfigureServices()
     {
         var builder = new ContainerBuilder();
-        
+
         // Configure Serilog
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
-            .WriteTo.File("logs/client-.log", 
+            .WriteTo.File("logs/client-.log",
                 rollingInterval: RollingInterval.Day,
                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
             .CreateLogger();
