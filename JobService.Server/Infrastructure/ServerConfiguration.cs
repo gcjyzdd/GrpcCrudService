@@ -1,30 +1,26 @@
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using JobService.Common;
 
 namespace JobService.Infrastructure;
 
 public class ServerConfiguration
 {
-    public static string ConfigureKestrel(KestrelServerOptions options)
+    public static string ConfigureKestrel(KestrelServerOptions options, IConnectionConfiguration connectionConfig)
     {
         var socketPath = string.Empty;
 
-        if (OperatingSystem.IsWindows())
+        if (connectionConfig.IsWindows)
         {
-            options.ListenNamedPipe("JobServicePipe");
+            options.ListenNamedPipe(connectionConfig.PipeName);
         }
         else
         {
-            socketPath = GetUnixSocketPath();
+            socketPath = connectionConfig.SocketPath;
             CleanupExistingSocket(socketPath);
             options.ListenUnixSocket(socketPath);
         }
 
         return socketPath;
-    }
-
-    private static string GetUnixSocketPath()
-    {
-        return Path.Combine(Path.GetTempPath(), "jobservice.sock");
     }
 
     private static void CleanupExistingSocket(string socketPath)
@@ -35,15 +31,15 @@ public class ServerConfiguration
         }
     }
 
-    public static void LogConnectionInfo(ILogger logger, string socketPath)
+    public static void LogConnectionInfo(ILogger logger, IConnectionConfiguration connectionConfig)
     {
-        if (OperatingSystem.IsWindows())
+        if (connectionConfig.IsWindows)
         {
-            logger.LogInformation("gRPC Server listening on named pipe: JobServicePipe");
+            logger.LogInformation("gRPC Server listening on named pipe: {PipeName}", connectionConfig.PipeName);
         }
         else
         {
-            logger.LogInformation("gRPC Server listening on Unix socket: {SocketPath}", socketPath);
+            logger.LogInformation("gRPC Server listening on Unix socket: {SocketPath}", connectionConfig.SocketPath);
         }
     }
 }

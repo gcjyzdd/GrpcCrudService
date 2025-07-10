@@ -1,5 +1,6 @@
 using Grpc.Net.Client;
 using JobService.Client.Interfaces;
+using JobService.Common;
 using Microsoft.Extensions.Logging;
 using System.IO.Pipes;
 using System.Net.Sockets;
@@ -9,26 +10,27 @@ namespace JobService.Client.Services;
 public class GrpcChannelFactory : IGrpcChannelFactory
 {
     private readonly ILogger<GrpcChannelFactory> _logger;
+    private readonly IConnectionConfiguration _connectionConfig;
 
-    public GrpcChannelFactory(ILogger<GrpcChannelFactory> logger)
+    public GrpcChannelFactory(ILogger<GrpcChannelFactory> logger, IConnectionConfiguration connectionConfig)
     {
         _logger = logger;
+        _connectionConfig = connectionConfig;
     }
 
     public GrpcChannel CreateChannel()
     {
         var connectionString = "http://localhost";
         
-        if (OperatingSystem.IsWindows())
+        if (_connectionConfig.IsWindows)
         {
-            _logger.LogInformation("Creating Windows named pipe connection to: JobServicePipe");
+            _logger.LogInformation("Creating Windows named pipe connection to: {PipeName}", _connectionConfig.PipeName);
             return CreateWindowsNamedPipeChannel(connectionString);
         }
         else
         {
-            var socketPath = Path.Combine(Path.GetTempPath(), "jobservice.sock");
-            _logger.LogInformation("Creating Unix domain socket connection to: {SocketPath}", socketPath);
-            return CreateUnixDomainSocketChannel(connectionString, socketPath);
+            _logger.LogInformation("Creating Unix domain socket connection to: {SocketPath}", _connectionConfig.SocketPath);
+            return CreateUnixDomainSocketChannel(connectionString, _connectionConfig.SocketPath);
         }
     }
 
@@ -42,7 +44,7 @@ public class GrpcChannelFactory : IGrpcChannelFactory
                 {
                     try
                     {
-                        var pipeClient = new NamedPipeClientStream(".", "JobServicePipe", PipeDirection.InOut);
+                        var pipeClient = new NamedPipeClientStream(".", _connectionConfig.PipeName, PipeDirection.InOut);
                         await pipeClient.ConnectAsync(cancellationToken);
                         _logger.LogDebug("Successfully connected to named pipe");
                         return pipeClient;

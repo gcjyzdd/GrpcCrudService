@@ -4,6 +4,7 @@ using JobService;
 using JobService.Client;
 using JobService.Client.Interfaces;
 using JobService.Client.Services;
+using JobService.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -58,6 +59,11 @@ static class Program
             .As<ILoggerFactory>()
             .SingleInstance();
         builder.RegisterGeneric(typeof(Logger<>)).As(typeof(ILogger<>));
+
+        // Register connection configuration
+        builder.RegisterType<ConnectionConfiguration>()
+            .As<IConnectionConfiguration>()
+            .SingleInstance();
 
         // Register gRPC channel factory
         builder.RegisterType<GrpcChannelFactory>()

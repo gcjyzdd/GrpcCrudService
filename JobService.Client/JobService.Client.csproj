@@ -27,4 +27,8 @@
     <Protobuf Include="../JobService.Server/Protos/job.proto" GrpcServices="Client" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../JobService.Common/JobService.Common.csproj" />
+  </ItemGroup>
+
 </Project>

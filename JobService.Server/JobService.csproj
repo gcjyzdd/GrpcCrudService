@@ -23,4 +23,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../JobService.Common/JobService.Common.csproj" />
+  </ItemGroup>
+
 </Project>
