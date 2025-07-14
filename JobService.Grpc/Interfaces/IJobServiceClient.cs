@@ -1,6 +1,6 @@
 using JobService;
 
-namespace JobService.Client.Interfaces;
+namespace JobService.Grpc.Interfaces;
 
 public interface IJobServiceClient
 {

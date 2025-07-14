@@ -1,6 +1,6 @@
 using Grpc.Net.Client;
 
-namespace JobService.Client.Interfaces;
+namespace JobService.Grpc.Interfaces;
 
 public interface IGrpcChannelFactory
 {

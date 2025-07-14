@@ -1,11 +1,11 @@
 using Grpc.Net.Client;
-using JobService.Client.Interfaces;
+using JobService.Grpc.Interfaces;
 using JobService.Common;
 using Microsoft.Extensions.Logging;
 using System.IO.Pipes;
 using System.Net.Sockets;
 
-namespace JobService.Client.Services;
+namespace JobService.Grpc.Services;
 
 public class GrpcChannelFactory : IGrpcChannelFactory
 {
@@ -21,7 +21,7 @@ public class GrpcChannelFactory : IGrpcChannelFactory
     public GrpcChannel CreateChannel()
     {
         var connectionString = "http://localhost";
-        
+
         if (_connectionConfig.IsWindows)
         {
             _logger.LogInformation("Creating Windows named pipe connection to: {PipeName}", _connectionConfig.PipeName);

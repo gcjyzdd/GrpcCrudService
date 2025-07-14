@@ -1,8 +1,8 @@
 using JobService;
-using JobService.Client.Interfaces;
+using JobService.Grpc.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace JobService.Client.Services;
+namespace JobService.Grpc.Services;
 
 public class JobServiceClient : IJobServiceClient
 {

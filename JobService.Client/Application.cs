@@ -1,5 +1,5 @@
 using JobService;
-using JobService.Client.Interfaces;
+using JobService.Grpc.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace JobService.Client;
@@ -24,7 +24,7 @@ public class Application
         {
             await TestCreateJob();
             var jobs = await TestGetAllJobs();
-            
+
             if (jobs.Count > 0)
             {
                 var firstJob = jobs[0];
@@ -55,7 +55,7 @@ public class Application
             WorkDir = "/tmp/test",
             ClusterName = "test-cluster"
         });
-        
+
         LogJobOperationResult(createResponse);
         LogJobDetails(createResponse.Job, "Created");
         return createResponse;
@@ -65,7 +65,7 @@ public class Application
     {
         _logger.LogInformation("2. Getting all jobs...");
         var getAllResponse = await _jobServiceClient.GetAllJobsAsync(new GetAllJobsRequest());
-        
+
         _logger.LogInformation("   Success: {Success}", getAllResponse.Success);
         _logger.LogInformation("   Message: {Message}", getAllResponse.Message);
         _logger.LogInformation("   Total jobs: {JobCount}", getAllResponse.Jobs.Count);
@@ -78,7 +78,7 @@ public class Application
     {
         _logger.LogInformation("3. Getting specific job...");
         var getResponse = await _jobServiceClient.GetJobAsync(new GetJobRequest { Id = jobId });
-        
+
         LogJobOperationResult(getResponse);
         if (getResponse.Success)
         {
@@ -97,7 +97,7 @@ public class Application
             WorkDir = "/tmp/updated",
             ClusterName = "updated-cluster"
         });
-        
+
         LogJobOperationResult(updateResponse);
         LogJobDetails(updateResponse.Job, "Updated");
     }
@@ -111,7 +111,7 @@ public class Application
             WorkDir = "/tmp/second",
             ClusterName = "second-cluster"
         });
-        
+
         LogJobOperationResult(createResponse2);
     }
 
@@ -119,7 +119,7 @@ public class Application
     {
         _logger.LogInformation("6. Getting all jobs again...");
         var getAllResponse2 = await _jobServiceClient.GetAllJobsAsync(new GetAllJobsRequest());
-        
+
         _logger.LogInformation("   Success: {Success}", getAllResponse2.Success);
         _logger.LogInformation("   Total jobs: {JobCount}", getAllResponse2.Jobs.Count);
 
@@ -130,7 +130,7 @@ public class Application
     {
         _logger.LogInformation("7. Deleting first job...");
         var deleteResponse = await _jobServiceClient.DeleteJobAsync(new DeleteJobRequest { Id = jobId });
-        
+
         _logger.LogInformation("   Success: {Success}", deleteResponse.Success);
         _logger.LogInformation("   Message: {Message}", deleteResponse.Message);
     }
@@ -139,7 +139,7 @@ public class Application
     {
         _logger.LogInformation("8. Final check - getting all jobs...");
         var getAllResponse3 = await _jobServiceClient.GetAllJobsAsync(new GetAllJobsRequest());
-        
+
         _logger.LogInformation("   Success: {Success}", getAllResponse3.Success);
         _logger.LogInformation("   Total jobs: {JobCount}", getAllResponse3.Jobs.Count);
 

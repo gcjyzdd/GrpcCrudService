@@ -1,7 +1,7 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using JobService.Client.Interfaces;
-using JobService.Client.Services;
+using JobService.Grpc.Interfaces;
+using JobService.Grpc.Services;
 using JobService.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

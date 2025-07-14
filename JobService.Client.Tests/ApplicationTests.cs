@@ -1,6 +1,6 @@
 using JobService;
 using JobService.Client;
-using JobService.Client.Interfaces;
+using JobService.Grpc.Interfaces;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;

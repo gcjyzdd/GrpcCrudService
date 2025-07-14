@@ -1,6 +1,6 @@
 using Grpc.Net.Client;
-using JobService.Client.Interfaces;
-using JobService.Client.Services;
+using JobService.Grpc.Interfaces;
+using JobService.Grpc.Services;
 using JobService.Common;
 using Microsoft.Extensions.Logging;
 
@@ -27,7 +27,7 @@ public class ClientTestFixture : IAsyncDisposable
         var channelFactory = new GrpcChannelFactory(_logger, _connectionConfig);
         _channel = channelFactory.CreateChannel();
         _grpcClient = new global::JobService.JobService.JobServiceClient(_channel);
-        
+
         // Test the connection by trying to get all jobs (which should work even if empty)
         var maxRetries = 10;
         for (int i = 0; i < maxRetries; i++)
@@ -55,7 +55,7 @@ public class ClientTestFixture : IAsyncDisposable
             await _channel.ShutdownAsync();
             _channel.Dispose();
         }
-        
+
         GC.SuppressFinalize(this);
     }
 }
