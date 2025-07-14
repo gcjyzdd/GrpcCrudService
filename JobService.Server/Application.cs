@@ -13,39 +13,46 @@ public class Application
     private readonly DatabaseInitializer _databaseInitializer;
     private readonly IConnectionConfiguration _connectionConfiguration;
 
-    public Application(WebApplicationBuilder builder)
+    public Application(WebApplicationBuilder builder, IConnectionConfiguration? connectionConfig = null)
     {
-        var connectionConfig = ConfigureConnectionSettings(builder);
-        ConfigureKestrel(builder, connectionConfig);
+        _connectionConfiguration = CreateConnectionConfiguration(builder, connectionConfig);
+        
+        builder.Services.AddSingleton<IConnectionConfiguration>(_connectionConfiguration);
+        ConfigureKestrel(builder, _connectionConfiguration);
         
         _app = builder.Build();
-        _connectionConfiguration = connectionConfig;
         
         _logger = _app.Services.GetRequiredService<ILogger<Application>>();
         _databaseInitializer = _app.Services.GetRequiredService<DatabaseInitializer>();
         
         var shutdownTokenSource = _app.Services.GetRequiredService<CancellationTokenSource>();
-        var socketPath = GetSocketPath(connectionConfig);
+        var socketPath = GetSocketPath(_connectionConfiguration);
         _shutdownService = new GracefulShutdownService(_app.Services.GetRequiredService<ILogger<GracefulShutdownService>>(), shutdownTokenSource, socketPath);
     }
     
-    private static IConnectionConfiguration ConfigureConnectionSettings(WebApplicationBuilder builder)
+    private static IConnectionConfiguration CreateConnectionConfiguration(WebApplicationBuilder builder, IConnectionConfiguration? providedConfig)
     {
-        var connectionConfig = new ConnectionConfiguration();
+        if (providedConfig != null)
+        {
+            return providedConfig;
+        }
 
+        var defaultConfig = new ConnectionConfiguration();
+        
         if (builder.Environment.EnvironmentName == "Testing")
         {
             var testPipeName = Environment.GetEnvironmentVariable("TEST_PIPE_NAME");
             var testSocketPath = Environment.GetEnvironmentVariable("TEST_SOCKET_PATH");
 
-            if (!string.IsNullOrEmpty(testPipeName))
-                connectionConfig.PipeName = testPipeName;
-            if (!string.IsNullOrEmpty(testSocketPath))
-                connectionConfig.SocketPath = testSocketPath;
+            if (!string.IsNullOrEmpty(testPipeName) || !string.IsNullOrEmpty(testSocketPath))
+            {
+                return new ConnectionConfiguration(
+                    testPipeName ?? defaultConfig.PipeName,
+                    testSocketPath ?? defaultConfig.SocketPath);
+            }
         }
-
-        builder.Services.AddSingleton<IConnectionConfiguration>(connectionConfig);
-        return connectionConfig;
+        
+        return defaultConfig;
     }
 
     private static void ConfigureKestrel(WebApplicationBuilder builder, IConnectionConfiguration connectionConfig)
