@@ -3,15 +3,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using JobService.Common;
-using System.Diagnostics;
+using JobService.Server;
 
 namespace JobService.IntegrationTests.Fixtures;
 
 public class ServerTestFixture : IAsyncDisposable
 {
-    private Process? _serverProcess;
+    private Application? _serverApplication;
     private readonly ConnectionConfiguration _connectionConfig;
     private readonly string _socketPath;
+    private CancellationTokenSource? _cancellationTokenSource;
+    private Task? _runTask;
 
     public ConnectionConfiguration ConnectionConfig => _connectionConfig;
 
@@ -29,43 +31,35 @@ public class ServerTestFixture : IAsyncDisposable
             File.Delete(_socketPath);
         }
 
-        var serverPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "JobService.Server"));
+        // Set environment variables for testing
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Testing");
+        Environment.SetEnvironmentVariable("TEST_PIPE_NAME", _connectionConfig.PipeName);
+        Environment.SetEnvironmentVariable("TEST_SOCKET_PATH", _connectionConfig.SocketPath);
+        Environment.SetEnvironmentVariable("ConnectionStrings__DefaultConnection", $"Data Source=test_{Guid.NewGuid().ToString("N")[..8]}.db");
+
+        // Create application using ApplicationFactory
+        var args = new string[] { };
+        _serverApplication = ApplicationFactory.CreateApplication(args, _connectionConfig);
         
-        _serverProcess = new Process
+        _cancellationTokenSource = new CancellationTokenSource();
+        
+        // Start the application in the background
+        _runTask = Task.Run(async () =>
         {
-            StartInfo = new ProcessStartInfo
+            try
             {
-                FileName = "dotnet",
-                Arguments = $"run --project \"{serverPath}\"",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true,
-                Environment = 
-                {
-                    ["ASPNETCORE_ENVIRONMENT"] = "Testing",
-                    ["TEST_PIPE_NAME"] = _connectionConfig.PipeName,
-                    ["TEST_SOCKET_PATH"] = _connectionConfig.SocketPath,
-                    ["ConnectionStrings__DefaultConnection"] = $"Data Source=test_{Guid.NewGuid().ToString("N")[..8]}.db"
-                }
+                await _serverApplication.RunAsync();
             }
-        };
-
-        // Capture output for debugging
-        _serverProcess.OutputDataReceived += (sender, e) => 
-        {
-            if (!string.IsNullOrEmpty(e.Data))
-                Console.WriteLine($"Server: {e.Data}");
-        };
-        _serverProcess.ErrorDataReceived += (sender, e) => 
-        {
-            if (!string.IsNullOrEmpty(e.Data))
-                Console.WriteLine($"Server Error: {e.Data}");
-        };
-
-        _serverProcess.Start();
-        _serverProcess.BeginOutputReadLine();
-        _serverProcess.BeginErrorReadLine();
+            catch (OperationCanceledException)
+            {
+                // Expected when cancellation is requested
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Server error: {ex.Message}");
+                throw;
+            }
+        });
         
         // Wait for server to start and create the socket/pipe
         var maxWait = TimeSpan.FromSeconds(10);
@@ -100,25 +94,24 @@ public class ServerTestFixture : IAsyncDisposable
 
     public async Task StopAsync()
     {
-        if (_serverProcess != null && !_serverProcess.HasExited)
+        if (_cancellationTokenSource != null && !_cancellationTokenSource.Token.IsCancellationRequested)
+        {
+            _cancellationTokenSource.Cancel();
+        }
+
+        if (_runTask != null)
         {
             try
             {
-                // Try graceful shutdown first
-                _serverProcess.CloseMainWindow();
-                
-                // Wait up to 5 seconds for graceful shutdown
-                if (!_serverProcess.WaitForExit(5000))
-                {
-                    // Force kill if graceful shutdown failed
-                    _serverProcess.Kill();
-                }
-                
-                await _serverProcess.WaitForExitAsync();
+                await _runTask.WaitAsync(TimeSpan.FromSeconds(5));
+            }
+            catch (TimeoutException)
+            {
+                Console.WriteLine("Server shutdown timed out");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error stopping server: {ex.Message}");
+                Console.WriteLine($"Error during server shutdown: {ex.Message}");
             }
         }
     }
@@ -126,7 +119,8 @@ public class ServerTestFixture : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await StopAsync();
-        _serverProcess?.Dispose();
+        
+        _cancellationTokenSource?.Dispose();
         
         // Cleanup socket file if it exists
         if (!_connectionConfig.IsWindows && File.Exists(_socketPath))

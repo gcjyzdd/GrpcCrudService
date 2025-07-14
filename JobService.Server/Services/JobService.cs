@@ -20,6 +20,20 @@ namespace JobService.Services
         {
             try
             {
+                // Validate input data
+                if (string.IsNullOrWhiteSpace(request.Name))
+                {
+                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Job name cannot be empty"));
+                }
+                if (string.IsNullOrWhiteSpace(request.WorkDir))
+                {
+                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Work directory cannot be empty"));
+                }
+                if (string.IsNullOrWhiteSpace(request.ClusterName))
+                {
+                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Cluster name cannot be empty"));
+                }
+
                 var job = new Models.Job
                 {
                     Name = request.Name,
@@ -37,14 +51,14 @@ namespace JobService.Services
                     Message = "Job created successfully"
                 };
             }
+            catch (RpcException)
+            {
+                throw; // Re-throw RpcExceptions as-is
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating job");
-                return new JobResponse
-                {
-                    Success = false,
-                    Message = $"Error creating job: {ex.Message}"
-                };
+                throw new RpcException(new Status(StatusCode.Internal, $"Error creating job: {ex.Message}"));
             }
         }
 
@@ -55,11 +69,7 @@ namespace JobService.Services
                 var job = await _jobRepository.GetByIdAsync(request.Id);
                 if (job == null)
                 {
-                    return new JobResponse
-                    {
-                        Success = false,
-                        Message = "Job not found"
-                    };
+                    throw new RpcException(new Status(StatusCode.NotFound, "Job not found"));
                 }
 
                 return new JobResponse
@@ -69,14 +79,14 @@ namespace JobService.Services
                     Message = "Job retrieved successfully"
                 };
             }
+            catch (RpcException)
+            {
+                throw; // Re-throw RpcExceptions as-is
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving job");
-                return new JobResponse
-                {
-                    Success = false,
-                    Message = $"Error retrieving job: {ex.Message}"
-                };
+                throw new RpcException(new Status(StatusCode.Internal, $"Error retrieving job: {ex.Message}"));
             }
         }
 
@@ -113,6 +123,20 @@ namespace JobService.Services
         {
             try
             {
+                // Validate input data
+                if (string.IsNullOrWhiteSpace(request.Name))
+                {
+                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Job name cannot be empty"));
+                }
+                if (string.IsNullOrWhiteSpace(request.WorkDir))
+                {
+                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Work directory cannot be empty"));
+                }
+                if (string.IsNullOrWhiteSpace(request.ClusterName))
+                {
+                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Cluster name cannot be empty"));
+                }
+
                 var job = new Models.Job
                 {
                     Id = request.Id,
@@ -124,11 +148,7 @@ namespace JobService.Services
                 var updatedJob = await _jobRepository.UpdateAsync(job);
                 if (updatedJob == null)
                 {
-                    return new JobResponse
-                    {
-                        Success = false,
-                        Message = "Job not found"
-                    };
+                    throw new RpcException(new Status(StatusCode.NotFound, "Job not found"));
                 }
 
                 return new JobResponse
@@ -138,14 +158,14 @@ namespace JobService.Services
                     Message = "Job updated successfully"
                 };
             }
+            catch (RpcException)
+            {
+                throw; // Re-throw RpcExceptions as-is
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating job");
-                return new JobResponse
-                {
-                    Success = false,
-                    Message = $"Error updating job: {ex.Message}"
-                };
+                throw new RpcException(new Status(StatusCode.Internal, $"Error updating job: {ex.Message}"));
             }
         }
 
@@ -156,11 +176,7 @@ namespace JobService.Services
                 var deleted = await _jobRepository.DeleteAsync(request.Id);
                 if (!deleted)
                 {
-                    return new DeleteJobResponse
-                    {
-                        Success = false,
-                        Message = "Job not found"
-                    };
+                    throw new RpcException(new Status(StatusCode.NotFound, "Job not found"));
                 }
 
                 return new DeleteJobResponse
@@ -169,14 +185,14 @@ namespace JobService.Services
                     Message = "Job deleted successfully"
                 };
             }
+            catch (RpcException)
+            {
+                throw; // Re-throw RpcExceptions as-is
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting job");
-                return new DeleteJobResponse
-                {
-                    Success = false,
-                    Message = $"Error deleting job: {ex.Message}"
-                };
+                throw new RpcException(new Status(StatusCode.Internal, $"Error deleting job: {ex.Message}"));
             }
         }
 
