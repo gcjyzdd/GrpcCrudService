@@ -8,12 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.31.1" />
-    <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
-    <PackageReference Include="Grpc.Tools" Version="2.72.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="Autofac" Version="8.0.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
@@ -24,11 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="../JobService.Server/Protos/job.proto" GrpcServices="Client" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="../JobService.Common/JobService.Common.csproj" />
+    <ProjectReference Include="../JobService.Grpc/JobService.Grpc.csproj" />
   </ItemGroup>
 
 </Project>
