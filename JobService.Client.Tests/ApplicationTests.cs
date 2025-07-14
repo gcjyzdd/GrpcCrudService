@@ -62,7 +62,7 @@ public class ApplicationTests
         // Assert
         _mockJobServiceClient.Verify(x => x.CreateJobAsync(It.IsAny<CreateJobRequest>()), Times.Once);
         _mockJobServiceClient.Verify(x => x.GetAllJobsAsync(It.IsAny<GetAllJobsRequest>()), Times.Once);
-        
+
         // Verify job-specific operations are not called
         _mockJobServiceClient.Verify(x => x.GetJobAsync(It.IsAny<GetJobRequest>()), Times.Never);
         _mockJobServiceClient.Verify(x => x.UpdateJobAsync(It.IsAny<UpdateJobRequest>()), Times.Never);
@@ -138,10 +138,10 @@ public class ApplicationTests
         var getAllResponse = CreateGetAllJobsResponse(true, "Jobs retrieved successfully", new List<Job> { job });
         var getResponse = CreateJobResponse(true, "Job retrieved successfully", job);
         var deleteResponse = CreateDeleteJobResponse(true, "Job deleted successfully");
-        
+
         UpdateJobRequest? capturedRequest = null;
         var updateResponse = CreateJobResponse(true, "Job updated successfully", job);
-        
+
         SetupBasicFlow(createResponse, getAllResponse, getResponse);
         _mockJobServiceClient.Setup(x => x.UpdateJobAsync(It.IsAny<UpdateJobRequest>()))
             .Callback<UpdateJobRequest>(req => capturedRequest = req)
@@ -182,7 +182,7 @@ public class ApplicationTests
         VerifyLogMessage(LogLevel.Information, "✅ All tests completed successfully!");
     }
 
-    private void SetupSuccessfulFlow(JobResponse createResponse, GetAllJobsResponse getAllResponse, 
+    private void SetupSuccessfulFlow(JobResponse createResponse, GetAllJobsResponse getAllResponse,
         JobResponse getResponse, JobResponse updateResponse, DeleteJobResponse deleteResponse)
     {
         _mockJobServiceClient.Setup(x => x.CreateJobAsync(It.IsAny<CreateJobRequest>()))
@@ -265,7 +265,7 @@ public class ApplicationTests
             Name = "Test Job",
             WorkDir = "/tmp/test",
             ClusterName = "test-cluster",
-            CreatedAt = Timestamp.FromDateTime(DateTime.SpecifyKind(new DateTime(2024, 1, 1, 10, 0, 0), DateTimeKind.Utc))
+            CreatedAt = Timestamp.FromDateTime(new DateTime(2024, 1, 1, 10, 0, 0, DateTimeKind.Utc))
         };
     }
 
@@ -286,12 +286,12 @@ public class ApplicationTests
             Success = success,
             Message = message
         };
-        
+
         foreach (var job in jobs)
         {
             response.Jobs.Add(job);
         }
-        
+
         return response;
     }
 

@@ -1,14 +1,6 @@
 using Autofac;
-using Autofac.Extensions.DependencyInjection;
-using JobService;
 using JobService.Client;
-using JobService.Client.Interfaces;
-using JobService.Client.Services;
-using JobService.Common;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Extensions.Logging;
 
 namespace JobService.Client;
 
@@ -16,10 +8,9 @@ static class Program
 {
     public static async Task Main(string[] args)
     {
-        var container = ConfigureServices();
-
         try
         {
+            var container = ApplicationFactory.CreateContainer();
             using var scope = container.BeginLifetimeScope();
             var app = scope.Resolve<Application>();
 
@@ -38,56 +29,5 @@ static class Program
         {
             await Log.CloseAndFlushAsync();
         }
-    }
-
-    private static IContainer ConfigureServices()
-    {
-        var builder = new ContainerBuilder();
-
-        // Configure Serilog
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
-            .WriteTo.File("logs/client-.log",
-                rollingInterval: RollingInterval.Day,
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
-            .CreateLogger();
-
-        // Register logging
-        builder.RegisterInstance(Log.Logger).As<Serilog.ILogger>();
-        builder.Register<ILoggerFactory>(context => new SerilogLoggerFactory(Log.Logger))
-            .As<ILoggerFactory>()
-            .SingleInstance();
-        builder.RegisterGeneric(typeof(Logger<>)).As(typeof(ILogger<>));
-
-        // Register connection configuration
-        builder.RegisterType<ConnectionConfiguration>()
-            .As<IConnectionConfiguration>()
-            .SingleInstance();
-
-        // Register gRPC channel factory
-        builder.RegisterType<GrpcChannelFactory>()
-            .As<IGrpcChannelFactory>()
-            .SingleInstance();
-
-        // Register gRPC client
-        builder.Register(context =>
-        {
-            var channelFactory = context.Resolve<IGrpcChannelFactory>();
-            var channel = channelFactory.CreateChannel();
-            return new global::JobService.JobService.JobServiceClient(channel);
-        }).SingleInstance();
-
-        // Register job service client
-        builder.RegisterType<JobServiceClient>()
-            .As<IJobServiceClient>()
-            .SingleInstance();
-
-        // Register application
-        builder.RegisterType<Application>()
-            .AsSelf()
-            .SingleInstance();
-
-        return builder.Build();
     }
 }
