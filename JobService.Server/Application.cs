@@ -73,6 +73,7 @@ public class Application
         try
         {
             _logger.LogInformation("JobService gRPC Server - Starting up");
+            _logger.LogInformation("================================================");
             
             await InitializeDatabaseAsync();
             ConfigureGrpcServices();
@@ -80,6 +81,7 @@ public class Application
             LogServerInfo();
             
             _logger.LogInformation("JobService gRPC Server - Ready to accept connections");
+            _logger.LogInformation("================================================");
             
             await _app.RunAsync(_shutdownService.ShutdownToken);
         }
