@@ -1,5 +1,6 @@
 using JobService.Data;
 using JobService.Repositories;
+using JobService.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace JobService.Infrastructure;
@@ -17,12 +18,24 @@ public static class ServiceCollectionExtensions
         // Add gRPC services
         services.AddGrpc();
 
-        // Add Entity Framework
+        // Add Entity Framework with SQLite configuration for better concurrency
         services.AddDbContext<JobContext>(options =>
-            options.UseSqlite(configuration.GetConnectionString("DefaultConnection")));
+        {
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            options.UseSqlite(connectionString, sqliteOptions =>
+            {
+                sqliteOptions.CommandTimeout(30);
+            });
+            options.EnableServiceProviderCaching();
+            options.EnableSensitiveDataLogging(false);
+        });
 
         // Add repositories
         services.AddScoped<IJobRepository, JobRepository>();
+
+        // Add task management services
+        services.AddSingleton<IJobTaskManager, JobTaskManager>();
+        services.AddScoped<IJobTaskExecutor, DefaultJobTaskExecutor>();
 
         // Add infrastructure services
         services.AddSingleton<CancellationTokenSource>();

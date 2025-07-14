@@ -2,6 +2,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace JobService.Models
 {
+    public enum JobTaskStatus
+    {
+        NotStarted,
+        Running,
+        Cancelling,
+        Cancelled,
+        Completed,
+        Failed
+    }
+
     public class Job
     {
         public int Id { get; set; }
@@ -19,5 +29,14 @@ namespace JobService.Models
         public string ClusterName { get; set; } = string.Empty;
         
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        
+        public JobTaskStatus TaskStatus { get; set; } = JobTaskStatus.NotStarted;
+        
+        public DateTime? TaskStartedAt { get; set; }
+        
+        public DateTime? TaskEndedAt { get; set; }
+        
+        [MaxLength(1000)]
+        public string? TaskErrorMessage { get; set; }
     }
 }

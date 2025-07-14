@@ -1,4 +1,5 @@
 using JobService.Models;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace JobService.Repositories;
 
@@ -10,4 +11,8 @@ public interface IJobRepository
     Task<Models.Job?> UpdateAsync(Models.Job job);
     Task<bool> DeleteAsync(int id);
     Task<bool> ExistsAsync(int id);
+    
+    Task<bool> UpdateTaskStatusAsync(int jobId, JobTaskStatus status, string? errorMessage = null);
+    Task<Models.Job?> GetJobWithStatusAsync(int id);
+    Task<IDbContextTransaction> BeginTransactionAsync();
 }
