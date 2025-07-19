@@ -1,4 +1,6 @@
-﻿using VersionInfo;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using VersionInfo;
 
 if (args.Length == 0)
 {
@@ -7,10 +9,23 @@ if (args.Length == 0)
     return 1;
 }
 
-var environmentService = new EnvironmentService();
-var commandExecutor = new CommandExecutor();
-var gitService = new GitService(commandExecutor);
-var versionFormatter = new VersionFormatter();
+var services = new ServiceCollection();
+services.AddLogging(builder => 
+{
+    builder.AddConsole();
+    builder.SetMinimumLevel(LogLevel.Warning);
+});
+
+services.AddTransient<IEnvironmentService, EnvironmentService>();
+services.AddTransient<ICommandExecutor, CommandExecutor>();
+services.AddTransient<IGitService, GitService>();
+services.AddTransient<IVersionFormatter, VersionFormatter>();
+
+var serviceProvider = services.BuildServiceProvider();
+
+var environmentService = serviceProvider.GetRequiredService<IEnvironmentService>();
+var gitService = serviceProvider.GetRequiredService<IGitService>();
+var versionFormatter = serviceProvider.GetRequiredService<IVersionFormatter>();
 
 string inputVersion = args[0];
 string hostname = environmentService.GetMachineName();

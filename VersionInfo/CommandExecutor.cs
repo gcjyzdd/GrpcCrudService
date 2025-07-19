@@ -1,9 +1,17 @@
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace VersionInfo;
 
 public class CommandExecutor : ICommandExecutor
 {
+    private readonly ILogger<CommandExecutor> _logger;
+
+    public CommandExecutor(ILogger<CommandExecutor> logger)
+    {
+        _logger = logger;
+    }
+
     public CommandResult ExecuteCommand(string fileName, string arguments, string? errorPrefix = null)
     {
         try
@@ -28,13 +36,14 @@ public class CommandExecutor : ICommandExecutor
 
             if (process.ExitCode != 0 && !string.IsNullOrEmpty(error) && !string.IsNullOrEmpty(errorPrefix))
             {
-                Console.WriteLine($"{errorPrefix}: {error}");
+                _logger.LogWarning("{ErrorPrefix}: {Error}", errorPrefix, error);
             }
 
             return new CommandResult(process.ExitCode == 0, process.ExitCode == 0 ? output : error);
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Failed to execute command: {FileName} {Arguments}", fileName, arguments);
             return new CommandResult(false, string.Empty);
         }
     }
