@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobService.IntegrationTests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobService.Grpc", "JobService.Grpc\JobService.Grpc.csproj", "{40FA407F-4538-4563-A9B8-5ECDBEE07BAF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VersionInfo", "VersionInfo\VersionInfo.csproj", "{B27BC470-5E08-4455-946A-C5C657066334}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{40FA407F-4538-4563-A9B8-5ECDBEE07BAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{40FA407F-4538-4563-A9B8-5ECDBEE07BAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{40FA407F-4538-4563-A9B8-5ECDBEE07BAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B27BC470-5E08-4455-946A-C5C657066334}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B27BC470-5E08-4455-946A-C5C657066334}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B27BC470-5E08-4455-946A-C5C657066334}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B27BC470-5E08-4455-946A-C5C657066334}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
