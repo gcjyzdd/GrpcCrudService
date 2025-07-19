@@ -65,6 +65,7 @@ public static class VersionInfoAppFactory
 
         services.AddSingleton(configuration);
         services.AddTransient<IEnvironmentService, EnvironmentService>();
+        services.AddTransient<IProcessWrapper, ProcessWrapper>();
         services.AddTransient<ICommandExecutor, CommandExecutor>();
         services.AddTransient<IGitService, GitService>();
         services.AddTransient<IVersionFormatter, VersionFormatter>();

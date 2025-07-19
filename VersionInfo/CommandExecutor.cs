@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace VersionInfo;
@@ -6,10 +5,12 @@ namespace VersionInfo;
 public class CommandExecutor : ICommandExecutor
 {
     private readonly ILogger<CommandExecutor> _logger;
+    private readonly IProcessWrapper _processWrapper;
 
-    public CommandExecutor(ILogger<CommandExecutor> logger)
+    public CommandExecutor(ILogger<CommandExecutor> logger, IProcessWrapper processWrapper)
     {
         _logger = logger;
+        _processWrapper = processWrapper;
     }
 
     public CommandResult ExecuteCommand(string fileName, string arguments, string? errorPrefix = null)
@@ -18,32 +19,16 @@ public class CommandExecutor : ICommandExecutor
 
         try
         {
-            var process = new Process
+            var result = _processWrapper.ExecuteProcess(fileName, arguments);
+
+            _logger.LogTrace("Command completed with exit code {ExitCode}. Output: {Output}", result.ExitCode, result.StandardOutput);
+
+            if (result.ExitCode != 0 && !string.IsNullOrEmpty(result.StandardError) && !string.IsNullOrEmpty(errorPrefix))
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = fileName,
-                    Arguments = arguments,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
-
-            process.Start();
-            string output = process.StandardOutput.ReadToEnd().Trim();
-            string error = process.StandardError.ReadToEnd().Trim();
-            process.WaitForExit();
-
-            _logger.LogTrace("Command completed with exit code {ExitCode}. Output: {Output}", process.ExitCode, output);
-
-            if (process.ExitCode != 0 && !string.IsNullOrEmpty(error) && !string.IsNullOrEmpty(errorPrefix))
-            {
-                _logger.LogDebug("{ErrorPrefix}: {Error}", errorPrefix, error);
+                _logger.LogDebug("{ErrorPrefix}: {Error}", errorPrefix, result.StandardError);
             }
 
-            return new CommandResult(process.ExitCode == 0, process.ExitCode == 0 ? output : error);
+            return new CommandResult(result.ExitCode == 0, result.ExitCode == 0 ? result.StandardOutput : result.StandardError);
         }
         catch (Exception ex)
         {
