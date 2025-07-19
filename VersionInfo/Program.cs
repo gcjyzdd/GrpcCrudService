@@ -13,7 +13,9 @@ if (args.Length == 0)
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Verbose()
-    .WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
+    .WriteTo.Console(
+        restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information,
+        outputTemplate: "{Message:lj}{NewLine}")
     .WriteTo.File("logs/versioninfo-.log",
         rollingInterval: RollingInterval.Day,
         restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Verbose)
