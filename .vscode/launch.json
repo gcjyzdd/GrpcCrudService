@@ -1,0 +1,93 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Integration Tests",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "dotnet",
+            "args": [
+                "test",
+                "${workspaceFolder}/JobService.IntegrationTests/JobService.IntegrationTests.csproj",
+                "--verbosity",
+                "normal",
+                "--no-build"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "justMyCode": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Testing"
+            },
+            "preLaunchTask": "build-integration-tests"
+        },
+        {
+            "name": "Debug Integration Tests (dotnet test)",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "dotnet",
+            "args": [
+                "test",
+                "${workspaceFolder}/JobService.IntegrationTests/JobService.IntegrationTests.csproj",
+                "--verbosity",
+                "normal",
+                "--logger",
+                "console;verbosity=detailed"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "justMyCode": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Testing",
+                "VSTEST_HOST_DEBUG": "1"
+            },
+            "preLaunchTask": "build-integration-tests"
+        },
+        {
+            "name": "Debug Server",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/JobService.Server/bin/Debug/net8.0/JobService.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/JobService.Server",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Testing",
+                "TEST_SOCKET_PATH": "/tmp/debug_test.sock",
+                "TEST_PIPE_NAME": "DebugJobServicePipe"
+            },
+            "preLaunchTask": "build-server"
+        },
+        {
+            "name": "Debug Client",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/JobService.Client/bin/Debug/net8.0/JobService.Client.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/JobService.Client",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Testing"
+            },
+            "preLaunchTask": "build-client"
+        },
+        {
+            "name": "Debug VersionInfo",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/VersionInfo/bin/Debug/net8.0/VersionInfo.dll",
+            "args": ["1.2.3"],
+            "cwd": "${workspaceFolder}/VersionInfo",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Testing"
+            },
+            "preLaunchTask": "build-versioninfo"
+        }
+    ]
+}

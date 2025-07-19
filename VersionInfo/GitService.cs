@@ -23,7 +23,13 @@ public class GitService : IGitService
             
             process.Start();
             string output = process.StandardOutput.ReadToEnd().Trim();
+            string error = process.StandardError.ReadToEnd().Trim();
             process.WaitForExit();
+            
+            if (process.ExitCode != 0 && !string.IsNullOrEmpty(error))
+            {
+                Console.WriteLine($"Git tag error: {error}");
+            }
             
             return process.ExitCode == 0 ? output : string.Empty;
         }
@@ -52,7 +58,13 @@ public class GitService : IGitService
             
             process.Start();
             string output = process.StandardOutput.ReadToEnd().Trim();
+            string error = process.StandardError.ReadToEnd().Trim();
             process.WaitForExit();
+            
+            if (process.ExitCode != 0 && !string.IsNullOrEmpty(error))
+            {
+                Console.WriteLine($"Git commit hash error: {error}");
+            }
             
             return process.ExitCode == 0 ? output : "unknown";
         }
