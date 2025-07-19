@@ -8,7 +8,8 @@ if (args.Length == 0)
 }
 
 var environmentService = new EnvironmentService();
-var gitService = new GitService();
+var commandExecutor = new CommandExecutor();
+var gitService = new GitService(commandExecutor);
 var versionFormatter = new VersionFormatter();
 
 string inputVersion = args[0];
