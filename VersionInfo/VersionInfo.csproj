@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -9,6 +9,28 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
     <NoWarn>$(NoWarn);IL2104</NoWarn>
+
+    <!-- Version Information -->
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.0.0</Version>
+
+    <!-- Product Information -->
+    <AssemblyTitle>VersionInfo</AssemblyTitle>
+    <Product>VersionInfo Utility</Product>
+    <AssemblyDescription>A utility for generating version information for GrpcCrudService applications</AssemblyDescription>
+
+    <!-- Company and Copyright Information -->
+    <Company>GrpcCrudService Project</Company>
+    <Copyright>Copyright © GrpcCrudService Project 2025</Copyright>
+
+    <!-- Additional Metadata -->
+    <AssemblyConfiguration>Release</AssemblyConfiguration>
+    <AssemblyCompany>GrpcCrudService Project</AssemblyCompany>
+    <AssemblyProduct>GrpcCrudService VersionInfo Utility</AssemblyProduct>
+    <AssemblyCopyright>Copyright © GrpcCrudService Project 2025</AssemblyCopyright>
+    <AssemblyTrademark></AssemblyTrademark>
+    <AssemblyInformationalVersion>1.0.0+$(COMPUTERNAME).$(BUILDNUMBER)</AssemblyInformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>
