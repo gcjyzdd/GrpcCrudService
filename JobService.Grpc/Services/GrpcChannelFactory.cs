@@ -4,6 +4,7 @@ using JobService.Common;
 using Microsoft.Extensions.Logging;
 using System.IO.Pipes;
 using System.Net.Sockets;
+using System.Security.Principal;
 
 namespace JobService.Grpc.Services;
 
@@ -44,13 +45,15 @@ public class GrpcChannelFactory : IGrpcChannelFactory
                 {
                     try
                     {
-                        var pipeClient = new NamedPipeClientStream(".", _connectionConfig.PipeName, PipeDirection.InOut);
+                        var pipeClient = new NamedPipeClientStream(".", _connectionConfig.PipeName, PipeDirection.InOut,
+                            options: PipeOptions.WriteThrough | PipeOptions.Asynchronous,
+                            impersonationLevel: TokenImpersonationLevel.Anonymous);
 
                         // Add timeout to prevent indefinite hanging
                         using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
                         using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
 
-                        await pipeClient.ConnectAsync(combinedCts.Token);
+                        await pipeClient.ConnectAsync(combinedCts.Token).ConfigureAwait(false);
                         _logger.LogDebug("Successfully connected to named pipe");
                         return pipeClient;
                     }

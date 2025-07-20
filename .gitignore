@@ -5,3 +5,5 @@ logs
 *.log
 CoverageReports
 TestReports
+*.user
+.vs

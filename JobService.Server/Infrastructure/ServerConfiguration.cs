@@ -11,7 +11,10 @@ public class ServerConfiguration
 
         if (connectionConfig.IsWindows)
         {
-            options.ListenNamedPipe(connectionConfig.PipeName);
+            options.ListenNamedPipe(connectionConfig.PipeName, listenOptions =>
+            {
+                listenOptions.Protocols = HttpProtocols.Http2;
+            });
         }
         else
         {
