@@ -22,6 +22,21 @@ public class ClientTestFixture : IAsyncDisposable
 
     public async Task InitializeAsync()
     {
+        // Add overall timeout to prevent hanging indefinitely
+        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        
+        try
+        {
+            await InitializeAsyncInternal(timeoutCts.Token);
+        }
+        catch (OperationCanceledException) when (timeoutCts.Token.IsCancellationRequested)
+        {
+            throw new TimeoutException("Client initialization timed out after 30 seconds");
+        }
+    }
+
+    private async Task InitializeAsyncInternal(CancellationToken cancellationToken)
+    {
         // Create client container using ApplicationFactory
         _container = ApplicationFactory.CreateContainer(_connectionConfig);
         _scope = _container.BeginLifetimeScope();
@@ -33,11 +48,23 @@ public class ClientTestFixture : IAsyncDisposable
         var maxRetries = 10;
         for (int i = 0; i < maxRetries; i++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+            
             try
             {
                 var testRequest = new GetAllJobsRequest();
-                await _grpcClient.GetAllJobsAsync(testRequest);
+                var call = _grpcClient.GetAllJobsAsync(testRequest);
+                
+                // Add timeout to each gRPC call
+                using var callTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, callTimeoutCts.Token);
+                
+                await call.ResponseAsync.WaitAsync(combinedCts.Token);
                 return; // Success!
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw; // Re-throw the main cancellation
             }
             catch (Exception ex)
             {
@@ -45,7 +72,15 @@ public class ClientTestFixture : IAsyncDisposable
                 logger.LogWarning($"Connection attempt {i + 1} failed: {ex.Message}");
                 if (i == maxRetries - 1)
                     throw new InvalidOperationException($"Failed to connect to server after {maxRetries} attempts", ex);
-                await Task.Delay(500);
+                
+                try
+                {
+                    await Task.Delay(500, cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw; // Re-throw if main timeout was hit
+                }
             }
         }
     }

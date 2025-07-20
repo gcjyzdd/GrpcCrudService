@@ -45,9 +45,23 @@ public class GrpcChannelFactory : IGrpcChannelFactory
                     try
                     {
                         var pipeClient = new NamedPipeClientStream(".", _connectionConfig.PipeName, PipeDirection.InOut);
-                        await pipeClient.ConnectAsync(cancellationToken);
+
+                        // Add timeout to prevent indefinite hanging
+                        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                        using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+
+                        await pipeClient.ConnectAsync(combinedCts.Token);
                         _logger.LogDebug("Successfully connected to named pipe");
                         return pipeClient;
+                    }
+                    catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
+                    {
+                        _logger.LogError(ex, "Named pipe connection was cancelled");
+                        throw;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        throw new TimeoutException($"Failed to connect to named pipe '{_connectionConfig.PipeName}' within 10 seconds");
                     }
                     catch (Exception ex)
                     {
