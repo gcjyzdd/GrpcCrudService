@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using JobService.Common;
 using JobService.Server;
+using System.IO.Pipes;
 
 namespace JobService.IntegrationTests.Fixtures;
 
@@ -62,16 +63,18 @@ public class ServerTestFixture : IAsyncDisposable
         });
         
         // Wait for server to start and create the socket/pipe
-        var maxWait = TimeSpan.FromSeconds(10);
+        var maxWait = TimeSpan.FromSeconds(30);
         var startTime = DateTime.UtcNow;
         
         while (DateTime.UtcNow - startTime < maxWait)
         {
             if (_connectionConfig.IsWindows)
             {
-                // For Windows named pipes, just wait a bit as they're created on demand
-                await Task.Delay(2000);
-                break;
+                // For Windows named pipes, test if we can actually connect
+                if (await TryConnectToNamedPipe())
+                {
+                    break;
+                }
             }
             else
             {
@@ -83,12 +86,39 @@ public class ServerTestFixture : IAsyncDisposable
                 }
             }
             
-            await Task.Delay(200);
+            await Task.Delay(500);
         }
         
-        if (!_connectionConfig.IsWindows && !File.Exists(_socketPath))
+        // Verify server is ready
+        if (_connectionConfig.IsWindows)
         {
-            throw new InvalidOperationException($"Server failed to create socket at {_socketPath}");
+            if (!await TryConnectToNamedPipe())
+            {
+                throw new InvalidOperationException($"Server failed to start named pipe '{_connectionConfig.PipeName}' within {maxWait.TotalSeconds} seconds");
+            }
+        }
+        else
+        {
+            if (!File.Exists(_socketPath))
+            {
+                throw new InvalidOperationException($"Server failed to create socket at {_socketPath}");
+            }
+        }
+    }
+
+    private async Task<bool> TryConnectToNamedPipe()
+    {
+        try
+        {
+            using var pipeClient = new NamedPipeClientStream(".", _connectionConfig.PipeName, PipeDirection.InOut);
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+            
+            await pipeClient.ConnectAsync(timeoutCts.Token);
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 
