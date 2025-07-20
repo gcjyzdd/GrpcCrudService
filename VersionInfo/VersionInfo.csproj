@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -28,9 +28,9 @@
     <AssemblyConfiguration>Release</AssemblyConfiguration>
     <AssemblyCompany>GrpcCrudService Project</AssemblyCompany>
     <AssemblyProduct>GrpcCrudService VersionInfo Utility</AssemblyProduct>
-    <AssemblyCopyright>Copyright © GrpcCrudService Project 2025</AssemblyCopyright>
+    <AssemblyCopyright>Copyright © GrpcCrudService 2025</AssemblyCopyright>
     <AssemblyTrademark></AssemblyTrademark>
-    <AssemblyInformationalVersion>1.0.0+$(COMPUTERNAME).$(BUILDNUMBER)</AssemblyInformationalVersion>
+    <AssemblyInformationalVersion>1.0.0a</AssemblyInformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>
