@@ -10,7 +10,12 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            runtime: linux-x64
+          - os: windows-latest
+            runtime: win-x64
+
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -30,12 +35,22 @@ jobs:
     - name: Test
       run: dotnet test --no-build --configuration Release --verbosity normal
 
-    - name: Publish
-      run: dotnet publish VersionInfo/VersionInfo.csproj --configuration Release /p:DebugType=none /p:StripSymbols=true --output ./publish
+    - name: Publish VersionInfo
+      run: dotnet publish VersionInfo/VersionInfo.csproj --configuration Release /p:DebugType=none /p:StripSymbols=true --output ./publish/VersionInfo
 
-    - name: Upload build artifacts
+    - name: Publish SimpleGui
+      run: dotnet publish SimpleGui/SimpleGui.csproj --configuration Release --runtime ${{ matrix.runtime }} --self-contained true /p:DebugType=none /p:StripSymbols=true --output ./publish/SimpleGui
+
+    - name: Upload VersionInfo artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: published-app-${{ matrix.os }}
-        path: ./publish
-        retention-days: 14
+        name: VersionInfo-${{ matrix.runtime }}
+        path: ./publish/VersionInfo
+        retention-days: 7
+
+    - name: Upload SimpleGui artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: SimpleGui-${{ matrix.runtime }}
+        path: ./publish/SimpleGui
+        retention-days: 7
