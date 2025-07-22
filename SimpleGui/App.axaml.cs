@@ -46,7 +46,14 @@ public partial class App : Application
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
             
-            var viewModel = _container?.Resolve<MainWindowViewModel>() ?? new MainWindowViewModel();
+            var viewModel = _container?.Resolve<MainWindowViewModel>();
+            if (viewModel == null)
+            {
+                // Fallback if container fails - create dependencies manually
+                var fileWrapper = new FileWrapper();
+                var configService = new ConfigurationService(fileWrapper);
+                viewModel = new MainWindowViewModel(configService);
+            }
             desktop.MainWindow = new MainWindow
             {
                 DataContext = viewModel,

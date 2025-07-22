@@ -15,6 +15,63 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <ScrollViewer Padding="20">
+        <StackPanel Spacing="15">
+            <TextBlock Text="{Binding Greeting}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+            
+            <Separator/>
+            
+            <TextBlock Text="Configuration Demo" FontSize="18" FontWeight="SemiBold"/>
+            
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="*,*,*,*" ShowGridLines="False">
+                <Grid.Styles>
+                    <Style Selector="TextBlock.label">
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="Margin" Value="0,0,10,0"/>
+                        <Setter Property="MinWidth" Value="100"/>
+                    </Style>
+                    <Style Selector="TextBox">
+                        <Setter Property="Margin" Value="0,5"/>
+                        <Setter Property="MinWidth" Value="300"/>
+                    </Style>
+                    <Style Selector="CheckBox">
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Setter Property="Margin" Value="0,5"/>
+                    </Style>
+                </Grid.Styles>
+
+                <!-- User Name -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="User Name:" Classes="label"/>
+                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding UserName}"/>
+
+                <!-- Theme -->
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Theme:" Classes="label"/>
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Theme}"/>
+
+                <!-- Auto Save -->
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Auto Save:" Classes="label"/>
+                <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding AutoSave}"/>
+
+                <!-- Server URL -->
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="Server URL:" Classes="label"/>
+                <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding ServerUrl}"/>
+            </Grid>
+
+            <Separator/>
+
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                <Button Content="Load Configuration" Command="{Binding LoadConfigurationCommand}" 
+                        Padding="20,10" MinWidth="150"/>
+                <Button Content="Save Configuration" Command="{Binding SaveConfigurationCommand}" 
+                        Padding="20,10" MinWidth="150"/>
+            </StackPanel>
+
+            <Separator/>
+
+            <Border Background="LightGray" Padding="10" CornerRadius="5">
+                <TextBlock Text="{Binding Status}" FontStyle="Italic" HorizontalAlignment="Center"/>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
 
 </Window>
