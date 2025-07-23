@@ -22,6 +22,7 @@ message Job {
   string work_dir = 3;
   string cluster_name = 4;
   google.protobuf.Timestamp created_at = 5;
+  float progress = 6;
 }
 
 // Create job request

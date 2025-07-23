@@ -30,6 +30,8 @@ namespace JobService.Models
         
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         
+        public float Progress { get; set; } = 0.0f;
+        
         public JobTaskStatus TaskStatus { get; set; } = JobTaskStatus.NotStarted;
         
         public DateTime? TaskStartedAt { get; set; }

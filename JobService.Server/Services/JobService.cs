@@ -12,7 +12,7 @@ namespace JobService.Services
         private readonly ILogger<JobGrpcService> _logger;
 
         public JobGrpcService(
-            IJobRepository jobRepository, 
+            IJobRepository jobRepository,
             IJobTaskManager taskManager,
             ILogger<JobGrpcService> logger)
         {
@@ -201,7 +201,7 @@ namespace JobService.Services
                 if (job.TaskStatus == JobTaskStatus.Running)
                 {
                     await _jobRepository.UpdateTaskStatusAsync(request.Id, JobTaskStatus.Cancelling);
-                    
+
                     // Step 2: Cancel the task (this can take time, but no DB transaction is held)
                     var cancellationSuccess = await _taskManager.CancelJobTaskAsync(request.Id);
                     if (!cancellationSuccess)
@@ -215,7 +215,7 @@ namespace JobService.Services
                     {
                         // If task doesn't finish quickly, return error and let user retry
                         await _jobRepository.UpdateTaskStatusAsync(request.Id, JobTaskStatus.Running);
-                        throw new RpcException(new Status(StatusCode.DeadlineExceeded, 
+                        throw new RpcException(new Status(StatusCode.DeadlineExceeded,
                             "Task cancellation in progress. Please try again in a few seconds."));
                     }
                 }
@@ -234,7 +234,7 @@ namespace JobService.Services
                     if (currentJob.TaskStatus == JobTaskStatus.Running)
                     {
                         await transaction.RollbackAsync();
-                        throw new RpcException(new Status(StatusCode.FailedPrecondition, 
+                        throw new RpcException(new Status(StatusCode.FailedPrecondition,
                             "Job task is still running. Please cancel the task first."));
                     }
 
@@ -279,7 +279,8 @@ namespace JobService.Services
                 Name = job.Name,
                 WorkDir = job.WorkDir,
                 ClusterName = job.ClusterName,
-                CreatedAt = Timestamp.FromDateTime(job.CreatedAt.ToUniversalTime())
+                CreatedAt = Timestamp.FromDateTime(job.CreatedAt.ToUniversalTime()),
+                Progress = job.Progress,
             };
         }
     }
