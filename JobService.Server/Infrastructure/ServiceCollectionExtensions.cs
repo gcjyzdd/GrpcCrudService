@@ -35,7 +35,7 @@ public static class ServiceCollectionExtensions
 
         // Add task management services
         services.AddSingleton<IJobTaskManager, JobTaskManager>();
-        services.AddScoped<IJobTaskExecutor, DefaultJobTaskExecutor>();
+        services.AddScoped<IJobTaskExecutor, RsyncJobTaskExecutor>();
 
         // Add infrastructure services
         services.AddSingleton<CancellationTokenSource>();

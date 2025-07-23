@@ -13,6 +13,7 @@ public interface IJobRepository
     Task<bool> ExistsAsync(int id);
     
     Task<bool> UpdateTaskStatusAsync(int jobId, JobTaskStatus status, string? errorMessage = null);
+    Task<bool> UpdateProgressAsync(int jobId, float progress);
     Task<Models.Job?> GetJobWithStatusAsync(int id);
     Task<IDbContextTransaction> BeginTransactionAsync();
 }

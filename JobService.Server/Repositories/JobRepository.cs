@@ -132,6 +132,37 @@ public class JobRepository : IJobRepository
         return false;
     }
 
+    public async Task<bool> UpdateProgressAsync(int jobId, float progress)
+    {
+        const int maxRetries = 3;
+        const int baseDelayMs = 100;
+
+        for (int attempt = 0; attempt < maxRetries; attempt++)
+        {
+            try
+            {
+                var job = await _context.Jobs.FindAsync(jobId);
+                if (job == null)
+                {
+                    return false;
+                }
+
+                job.Progress = Math.Clamp(progress, 0.0f, 100.0f);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Microsoft.Data.Sqlite.SqliteException ex) when (ex.SqliteErrorCode == 5) // SQLITE_BUSY
+            {
+                if (attempt == maxRetries - 1) throw;
+                
+                var delay = baseDelayMs * (int)Math.Pow(2, attempt);
+                await Task.Delay(delay);
+            }
+        }
+
+        return false;
+    }
+
     public async Task<Models.Job?> GetJobWithStatusAsync(int id)
     {
         return await _context.Jobs.FindAsync(id);
