@@ -4,15 +4,20 @@ using Microsoft.Extensions.Logging;
 
 namespace JobService.ProgressTest;
 
-public class Application
+public class Application : IDisposable
 {
     private readonly IJobServiceClient _jobServiceClient;
     private readonly ILogger<Application> _logger;
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private int _currentJobId = -1;
 
     public Application(IJobServiceClient jobServiceClient, ILogger<Application> logger)
     {
         _jobServiceClient = jobServiceClient;
         _logger = logger;
+        
+        // Set up Ctrl+C handler
+        Console.CancelKeyPress += OnCancelKeyPress;
     }
 
     public async Task RunAsync()
@@ -60,11 +65,12 @@ public class Application
             }
 
             var jobId = createResponse.Job.Id;
+            _currentJobId = jobId;
             _logger.LogInformation("✅ Job created successfully! Job ID: {JobId}", jobId);
             _logger.LogInformation("Initial Progress: {Progress}%", createResponse.Job.Progress);
 
             // Monitor progress
-            await MonitorJobProgress(jobId);
+            await MonitorJobProgress(jobId, _cancellationTokenSource.Token);
 
         }
         catch (Exception ex)
@@ -75,7 +81,7 @@ public class Application
         }
     }
 
-    private async Task MonitorJobProgress(int jobId)
+    private async Task MonitorJobProgress(int jobId, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Starting progress monitoring (checking every 1 second)...");
         _logger.LogInformation("Press Ctrl+C to stop monitoring");
@@ -83,7 +89,7 @@ public class Application
         var lastProgress = -1.0f;
         var startTime = DateTime.UtcNow;
 
-        while (true)
+        while (!cancellationToken.IsCancellationRequested)
         {
             try
             {
@@ -132,7 +138,12 @@ public class Application
                 }
 
                 // Wait 1 second before next check
-                await Task.Delay(500);
+                await Task.Delay(1000, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("⚠️ Monitoring cancelled by user");
+                break;
             }
             catch (Exception ex)
             {
@@ -140,6 +151,68 @@ public class Application
                 break;
             }
         }
+    }
+
+    private void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+    {
+        _logger.LogInformation("🛑 Ctrl+C pressed - stopping monitoring gracefully...");
+        
+        // Cancel the first time, but prevent immediate termination
+        e.Cancel = true;
+        
+        if (!_cancellationTokenSource.Token.IsCancellationRequested)
+        {
+            _cancellationTokenSource.Cancel();
+            _logger.LogInformation("📊 Getting final job status...");
+            
+            // Give a moment for the monitoring loop to finish
+            Task.Run(async () =>
+            {
+                await Task.Delay(2000);
+                if (_currentJobId > 0)
+                {
+                    await ShowFinalJobStatus(_currentJobId);
+                }
+                Environment.Exit(0);
+            });
+        }
+        else
+        {
+            // Second Ctrl+C - force exit
+            _logger.LogWarning("🚨 Force exit requested");
+            Environment.Exit(1);
+        }
+    }
+
+    private async Task ShowFinalJobStatus(int jobId)
+    {
+        try
+        {
+            var jobResponse = await _jobServiceClient.GetJobAsync(new GetJobRequest { Id = jobId });
+            if (jobResponse.Success)
+            {
+                var job = jobResponse.Job;
+                _logger.LogInformation("📋 Final Job Status:");
+                _logger.LogInformation("  - Job ID: {JobId}", job.Id);
+                _logger.LogInformation("  - Progress: {Progress}%", job.Progress);
+                _logger.LogInformation("  - Status: {Status}", job.Progress >= 100 ? "Completed" : "In Progress");
+                
+                if (job.Progress < 100)
+                {
+                    _logger.LogInformation("ℹ️ Job is still running on the server - you can monitor it later");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "⚠️ Could not retrieve final job status");
+        }
+    }
+
+    public void Dispose()
+    {
+        _cancellationTokenSource?.Dispose();
+        Console.CancelKeyPress -= OnCancelKeyPress;
     }
 
     private void LogConnectionTroubleshooting()
