@@ -126,7 +126,7 @@ public class MainWindowViewModelTests
             It.Is<AppConfiguration>(config => 
                 config.UserName == "Modified User" &&
                 config.Theme == "Dark" &&
-                config.AutoSave == false &&
+                !config.AutoSave &&
                 config.ServerUrl == "https://modified.server.com"
             )), Times.Once);
     }
